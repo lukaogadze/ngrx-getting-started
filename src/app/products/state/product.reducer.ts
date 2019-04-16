@@ -1,4 +1,4 @@
-import {ProductActionTypes} from './product.action';
+import {ProductActions, ProductActionTypes} from './product.action';
 
 
 export interface ProductState {
@@ -9,7 +9,7 @@ const initialState: ProductState = {
     showProductCode: false
 };
 
-export function productReducer(state = initialState, action: any): ProductState {
+export function reducer(state = initialState, action: ProductActions): ProductState {
     switch (action.type) {
         case ProductActionTypes.ToggleProductCode:
             return {
@@ -20,3 +20,5 @@ export function productReducer(state = initialState, action: any): ProductState 
             return state;
     }
 }
+
+
