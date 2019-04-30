@@ -6,7 +6,8 @@ import * as fromRoot from '../../state/app.state';
 export interface ProductState {
     readonly showProductCode: boolean;
     readonly currentProduct: Product | undefined;
-    readonly products: ReadonlyArray<Product>
+    readonly products: ReadonlyArray<Product>;
+    readonly error: string | undefined;
 }
 
 export interface State extends fromRoot.State {
@@ -17,6 +18,7 @@ const initialState: ProductState = {
     showProductCode: false,
     currentProduct: undefined,
     products: [],
+    error: undefined
 };
 
 
@@ -55,7 +57,15 @@ export function reducer(state: ProductState = initialState, action: ProductActio
         case ProductActionTypes.LoadSuccess:
             return {
                 ...state,
-                products: action.payload
+                error: undefined,
+                products: action.payload,
+            };
+
+        case ProductActionTypes.LoadFail:
+            return {
+                ...state,
+                products: [],
+                error: action.payload
             };
 
         default:

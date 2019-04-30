@@ -1,13 +1,13 @@
 import {Component, OnInit} from '@angular/core';
 
 import {Product} from '../product';
-import {ProductService} from '../product.service';
 import {select, Store} from '@ngrx/store';
 
 import * as fromProductReducer from '../state/product.reducer';
 
-import {InitializeCurrentProductAction, SetCurrentProductAction, ToggleProductCodeAction} from '../state/product.action';
-import {getCurrentProductSelector, getShowProductCodeSelector} from '../state/product.selector';
+import {InitializeCurrentProductAction, LoadAction, SetCurrentProductAction, ToggleProductCodeAction} from '../state/product.action';
+import {getCurrentProductSelector, getErrorSelector, getProductsSelector, getShowProductCodeSelector} from '../state/product.selector';
+import {Observable} from 'rxjs';
 
 @Component({
     selector: 'pm-product-list',
@@ -16,33 +16,21 @@ import {getCurrentProductSelector, getShowProductCodeSelector} from '../state/pr
 })
 export class ProductListComponent implements OnInit {
     readonly pageTitle: string;
-    products: Product[];
-    errorMessage: string | undefined;
-    displayCode: boolean | undefined;
-    selectedProduct: Product | undefined;
+    products$!: Observable<ReadonlyArray<Product>>;
+    errorMessage$!: Observable<string | undefined>;
+    displayCode$!: Observable<boolean>;
+    selectedProduct$!: Observable<Product | undefined>;
 
-    constructor(private readonly _productService: ProductService,
-                private readonly _store: Store<fromProductReducer.State>) {
-        this.products = [];
+    constructor(private readonly _store: Store<fromProductReducer.State>) {
         this.pageTitle = 'Products';
     }
 
     ngOnInit(): void {
-        // TODO Refactor
-        this._store.pipe(select(getCurrentProductSelector)).subscribe(
-            currentProduct => this.selectedProduct = currentProduct
-        );
-
-        this._productService.getProducts().subscribe(
-            (products: Product[]) => this.products = products,
-            (err: any) => this.errorMessage = err.error
-        );
-
-
-        // TODO Refactor
-        this._store.pipe(select(getShowProductCodeSelector)).subscribe(showProductCode => {
-            this.displayCode = showProductCode;
-        });
+        this.selectedProduct$ = this._store.pipe(select(getCurrentProductSelector));
+        this.errorMessage$ = this._store.pipe(select(getErrorSelector));
+        this._store.dispatch(new LoadAction());
+        this.products$ = this._store.pipe(select(getProductsSelector));
+        this.displayCode$ = this._store.pipe(select(getShowProductCodeSelector));
     }
 
     checkChanged(value: boolean): void {

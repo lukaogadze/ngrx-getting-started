@@ -21,3 +21,8 @@ export const getProductsSelector: MemoizedSelector<object, ReadonlyArray<Product
     getProductFeatureState,
     state => state.products
 );
+
+export const getErrorSelector: MemoizedSelector<object, string | undefined> = createSelector(
+    getProductFeatureState,
+    state => state.error
+);
