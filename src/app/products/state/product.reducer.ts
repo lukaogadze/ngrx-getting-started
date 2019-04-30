@@ -52,6 +52,12 @@ export function reducer(state: ProductState = initialState, action: ProductActio
                 }
             };
 
+        case ProductActionTypes.LoadSuccess:
+            return {
+                ...state,
+                products: action.payload
+            };
+
         default:
             return state;
     }
