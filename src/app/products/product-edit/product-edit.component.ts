@@ -1,39 +1,40 @@
-import {Component, OnInit, OnDestroy} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
-
-import {Subscription} from 'rxjs';
 
 import {Product} from '../product';
 import {ProductService} from '../product.service';
 import {GenericValidator} from '../../shared/generic-validator';
 import {NumberValidators} from '../../shared/number.validator';
+import {select, Store} from '@ngrx/store';
+
+import * as fromProductReducer from "../state/product.reducer";
+import {getCurrentProductSelector} from '../state/product.selector';
+import {ClearCurrentProductAction, SetCurrentProductAction} from '../state/product.action';
 
 @Component({
     selector: 'pm-product-edit',
     templateUrl: './product-edit.component.html',
     styleUrls: ['./product-edit.component.scss']
 })
-export class ProductEditComponent implements OnInit, OnDestroy {
+export class ProductEditComponent implements OnInit {
     pageTitle: string;
     errorMessage: string;
     productForm: FormGroup | undefined;
 
     product: Product | undefined;
-    sub!: Subscription;
 
     // Use with the generic validation message class
     displayMessage: { [key: string]: string } = {};
-    private validationMessages: { [key: string]: { [key: string]: string } };
-    private genericValidator: GenericValidator;
+    private readonly _validationMessages: { [key: string]: { [key: string]: string } };
+    private readonly _genericValidator: GenericValidator;
 
     constructor(private readonly fb: FormBuilder,
-                private readonly productService: ProductService) {
+                private readonly productService: ProductService,
+                private readonly _store: Store<fromProductReducer.State>) {
         this.pageTitle = 'Product Edit';
         this.errorMessage = "";
 
-        // Defines all of the validation messages for the form.
-        // These could instead be retrieved from a file or database.
-        this.validationMessages = {
+        this._validationMessages = {
             productName: {
                 required: 'Product name is required.',
                 minlength: 'Product name must be at least three characters.',
@@ -47,13 +48,11 @@ export class ProductEditComponent implements OnInit, OnDestroy {
             }
         };
 
-        // Define an instance of the validator for use with this form,
-        // passing in this form's set of validation messages.
-        this.genericValidator = new GenericValidator(this.validationMessages);
+
+        this._genericValidator = new GenericValidator(this._validationMessages);
     }
 
     ngOnInit(): void {
-        // Define the form group
         this.productForm = this.fb.group({
             productName: ['', [Validators.required,
                 Validators.minLength(3),
@@ -63,25 +62,22 @@ export class ProductEditComponent implements OnInit, OnDestroy {
             description: ''
         });
 
-        // Watch for changes to the currently selected product
-        this.sub = this.productService.selectedProductChanges$.subscribe(
-            (selectedProduct: Product | undefined) => this.displayProduct(selectedProduct)
+        // TODO Refactor
+        this._store.pipe(select(getCurrentProductSelector)).subscribe(
+            currentProduct => this.displayProduct(currentProduct)
         );
 
-        // Watch for value changes
+
         this.productForm.valueChanges.subscribe(
-            () => this.displayMessage = this.genericValidator.processMessages(this.productForm!)
+            () => this.displayMessage = this._genericValidator.processMessages(this.productForm!)
         );
     }
 
-    ngOnDestroy(): void {
-        this.sub.unsubscribe();
-    }
 
     // Also validate on blur
     // Helpful if the user tabs through required fields
     blur(): void {
-        this.displayMessage = this.genericValidator.processMessages(this.productForm!);
+        this.displayMessage = this._genericValidator.processMessages(this.productForm!);
     }
 
     displayProduct(product: Product | undefined): void {
@@ -119,13 +115,12 @@ export class ProductEditComponent implements OnInit, OnDestroy {
         if (this.product && this.product.id) {
             if (confirm(`Really delete the product: ${this.product.productName}?`)) {
                 this.productService.deleteProduct(this.product.id).subscribe(
-                    () => this.productService.changeSelectedProduct(undefined),
+                    () => this._store.dispatch(new ClearCurrentProductAction()),
                     (err: any) => this.errorMessage = err.error
                 );
             }
         } else {
-            // No need to delete, it was never saved
-            this.productService.changeSelectedProduct(undefined);
+            this._store.dispatch(new ClearCurrentProductAction())
         }
     }
 
@@ -139,12 +134,12 @@ export class ProductEditComponent implements OnInit, OnDestroy {
 
                 if (p.id === 0) {
                     this.productService.createProduct(p).subscribe(
-                        product => this.productService.changeSelectedProduct(product),
+                        product => this._store.dispatch(new SetCurrentProductAction(product)),
                         (err: any) => this.errorMessage = err.error
                     );
                 } else {
                     this.productService.updateProduct(p).subscribe(
-                        product => this.productService.changeSelectedProduct(product),
+                        product => this._store.dispatch(new SetCurrentProductAction(product)),
                         (err: any) => this.errorMessage = err.error
                     );
                 }

@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 
-import {Observable, of, BehaviorSubject, throwError} from 'rxjs';
+import {Observable, of, throwError} from 'rxjs';
 import {catchError, tap, map} from 'rxjs/operators';
 
 import {Product} from './product';
@@ -10,19 +10,13 @@ import {Product} from './product';
     providedIn: 'root',
 })
 export class ProductService {
-    private productsUrl = 'api/products';
+    private readonly productsUrl = 'api/products';
     private products: Product[];
-
-    private selectedProductSource = new BehaviorSubject<Product | undefined>(undefined);
-    selectedProductChanges$ = this.selectedProductSource.asObservable();
 
     constructor(private http: HttpClient) {
         this.products = [];
     }
 
-    changeSelectedProduct(selectedProduct: Product | undefined): void {
-        this.selectedProductSource.next(selectedProduct);
-    }
 
     getProducts(): Observable<Product[]> {
         if (this.products.length !== 0) {
@@ -35,16 +29,6 @@ export class ProductService {
             );
     }
 
-    // Return an initialized product
-    newProduct(): Product {
-        return {
-            id: 0,
-            productName: '',
-            productCode: 'New',
-            description: '',
-            starRating: 0
-        };
-    }
 
     createProduct(product: Product): Observable<Product> {
         const headers = new HttpHeaders({'Content-Type': 'application/json'});

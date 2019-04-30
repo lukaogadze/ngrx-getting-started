@@ -1,6 +1,4 @@
-import {Component, OnInit, OnDestroy} from '@angular/core';
-
-import {Subscription} from 'rxjs';
+import {Component, OnInit} from '@angular/core';
 
 import {Product} from '../product';
 import {ProductService} from '../product.service';
@@ -8,21 +6,20 @@ import {select, Store} from '@ngrx/store';
 
 import * as fromProductReducer from '../state/product.reducer';
 
-import {ToggleProductCodeAction} from '../state/product.action';
-import {getShowProductCode} from '../state/product.selector';
+import {InitializeCurrentProductAction, SetCurrentProductAction, ToggleProductCodeAction} from '../state/product.action';
+import {getCurrentProductSelector, getShowProductCodeSelector} from '../state/product.selector';
 
 @Component({
     selector: 'pm-product-list',
     templateUrl: './product-list.component.html',
     styleUrls: ['./product-list.component.scss']
 })
-export class ProductListComponent implements OnInit, OnDestroy {
+export class ProductListComponent implements OnInit {
     readonly pageTitle: string;
     products: Product[];
     errorMessage: string | undefined;
     displayCode: boolean | undefined;
     selectedProduct: Product | undefined;
-    selectedProductChangesSubscription: Subscription | undefined;
 
     constructor(private readonly _productService: ProductService,
                 private readonly _store: Store<fromProductReducer.State>) {
@@ -31,8 +28,9 @@ export class ProductListComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        this.selectedProductChangesSubscription = this._productService.selectedProductChanges$.subscribe(
-            (selectedProduct: Product | undefined) => this.selectedProduct = selectedProduct
+        // TODO Refactor
+        this._store.pipe(select(getCurrentProductSelector)).subscribe(
+            currentProduct => this.selectedProduct = currentProduct
         );
 
         this._productService.getProducts().subscribe(
@@ -41,13 +39,10 @@ export class ProductListComponent implements OnInit, OnDestroy {
         );
 
 
-        this._store.pipe(select(getShowProductCode)).subscribe(showProductCode => {
+        // TODO Refactor
+        this._store.pipe(select(getShowProductCodeSelector)).subscribe(showProductCode => {
             this.displayCode = showProductCode;
         });
-    }
-
-    ngOnDestroy(): void {
-        this.selectedProductChangesSubscription!.unsubscribe();
     }
 
     checkChanged(value: boolean): void {
@@ -55,11 +50,11 @@ export class ProductListComponent implements OnInit, OnDestroy {
     }
 
     newProduct(): void {
-        this._productService.changeSelectedProduct(this._productService.newProduct());
+        this._store.dispatch(new InitializeCurrentProductAction());
     }
 
     productSelected(product: Product): void {
-        this._productService.changeSelectedProduct(product);
+        this._store.dispatch(new SetCurrentProductAction(product));
     }
 
 }

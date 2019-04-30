@@ -7,17 +7,17 @@ const getProductFeatureState: MemoizedSelector<object, ProductState> = createFea
 
 
 
-export const getShowProductCode: MemoizedSelector<object, boolean> = createSelector(
+export const getShowProductCodeSelector: MemoizedSelector<object, boolean> = createSelector(
     getProductFeatureState,
     state => state.showProductCode
 );
 
-export const getCurrentProduct: MemoizedSelector<object, Product | undefined> = createSelector(
+export const getCurrentProductSelector: MemoizedSelector<object, Product | undefined> = createSelector(
     getProductFeatureState,
     state => state.currentProduct
 );
 
-export const getProducts: MemoizedSelector<object, ReadonlyArray<Product>> = createSelector(
+export const getProductsSelector: MemoizedSelector<object, ReadonlyArray<Product>> = createSelector(
     getProductFeatureState,
     state => state.products
 );
