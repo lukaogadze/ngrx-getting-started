@@ -1,7 +1,10 @@
 import {Action} from '@ngrx/store';
 
 export const enum ProductActionTypes {
-    ToggleProductCode = "[Product] Toggle Product Code"
+    /**
+     * [Products] Toggle Product Code
+     */
+    ToggleProductCode = "[Products] Toggle Product Code"
 }
 
 

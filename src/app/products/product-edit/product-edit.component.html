@@ -1,6 +1,5 @@
 <div class="card" *ngIf="product">
-  <div class="card-header">
-    {{pageTitle}}
+  <div class="card-header" [textContent]="pageTitle">
   </div>
   <div class="card-body">
     <form novalidate (ngSubmit)="saveProduct()" [formGroup]="productForm">

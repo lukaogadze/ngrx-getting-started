@@ -11,12 +11,12 @@ import {NumberValidators} from '../../shared/number.validator';
 @Component({
     selector: 'pm-product-edit',
     templateUrl: './product-edit.component.html',
-    styleUrls: ['./product-edit.component.css']
+    styleUrls: ['./product-edit.component.scss']
 })
 export class ProductEditComponent implements OnInit, OnDestroy {
-    pageTitle = 'Product Edit';
-    errorMessage = '';
-    productForm!: FormGroup;
+    pageTitle: string;
+    errorMessage: string;
+    productForm: FormGroup | undefined;
 
     product: Product | undefined;
     sub!: Subscription;
@@ -26,8 +26,10 @@ export class ProductEditComponent implements OnInit, OnDestroy {
     private validationMessages: { [key: string]: { [key: string]: string } };
     private genericValidator: GenericValidator;
 
-    constructor(private fb: FormBuilder,
-                private productService: ProductService) {
+    constructor(private readonly fb: FormBuilder,
+                private readonly productService: ProductService) {
+        this.pageTitle = 'Product Edit';
+        this.errorMessage = "";
 
         // Defines all of the validation messages for the form.
         // These could instead be retrieved from a file or database.
@@ -68,7 +70,7 @@ export class ProductEditComponent implements OnInit, OnDestroy {
 
         // Watch for value changes
         this.productForm.valueChanges.subscribe(
-            _ => this.displayMessage = this.genericValidator.processMessages(this.productForm)
+            () => this.displayMessage = this.genericValidator.processMessages(this.productForm!)
         );
     }
 
@@ -79,7 +81,7 @@ export class ProductEditComponent implements OnInit, OnDestroy {
     // Also validate on blur
     // Helpful if the user tabs through required fields
     blur(): void {
-        this.displayMessage = this.genericValidator.processMessages(this.productForm);
+        this.displayMessage = this.genericValidator.processMessages(this.productForm!);
     }
 
     displayProduct(product: Product | undefined): void {
@@ -88,7 +90,7 @@ export class ProductEditComponent implements OnInit, OnDestroy {
 
         if (this.product) {
             // Reset the form back to pristine
-            this.productForm.reset();
+            this.productForm!.reset();
 
             // Display the appropriate page title
             if (this.product.id === 0) {
@@ -98,7 +100,7 @@ export class ProductEditComponent implements OnInit, OnDestroy {
             }
 
             // Update the data on the form
-            this.productForm.patchValue({
+            this.productForm!.patchValue({
                 productName: this.product.productName,
                 productCode: this.product.productCode,
                 starRating: this.product.starRating,
@@ -128,12 +130,12 @@ export class ProductEditComponent implements OnInit, OnDestroy {
     }
 
     saveProduct(): void {
-        if (this.productForm.valid) {
-            if (this.productForm.dirty) {
+        if (this.productForm!.valid) {
+            if (this.productForm!.dirty) {
                 // Copy over all of the original product properties
                 // Then copy over the values from the form
                 // This ensures values not on the form, such as the Id, are retained
-                const p = {...this.product, ...this.productForm.value};
+                const p = {...this.product, ...this.productForm!.value};
 
                 if (p.id === 0) {
                     this.productService.createProduct(p).subscribe(

@@ -9,14 +9,14 @@ import {ProductEditComponent} from './product-edit/product-edit.component';
 import {StoreModule} from '@ngrx/store';
 import {reducer} from './state/product.reducer';
 
-const productRoutes: Routes = [
+const routes: Routes = [
     {path: '', component: ProductShellComponent}
 ];
 
 @NgModule({
     imports: [
         SharedModule,
-        RouterModule.forChild(productRoutes),
+        RouterModule.forChild(routes),
         StoreModule.forFeature('products', reducer)
     ],
     declarations: [

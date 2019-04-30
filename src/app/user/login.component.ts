@@ -9,10 +9,10 @@ import {MaskUserNameAction} from './state/user.action';
 
 @Component({
     templateUrl: './login.component.html',
-    styleUrls: ['./login.component.css']
+    styleUrls: ['./login.component.scss']
 })
 export class LoginComponent implements OnInit {
-    readonly pageTitle = 'Log In';
+    readonly pageTitle: string;
     errorMessage: string;
 
     maskUserName: boolean | undefined;
@@ -21,9 +21,14 @@ export class LoginComponent implements OnInit {
                 private readonly _router: Router,
                 private readonly _store: Store<UserState>) {
         this.errorMessage = '';
+        this.pageTitle = 'Log In';
     }
 
     ngOnInit(): void {
+
+        //TODO
+        // - Refactor
+        // - Unsubscribe
         this._store.pipe(select("users")).subscribe(
             (userState: UserState) => {
                 this.maskUserName = userState.maskUserName;

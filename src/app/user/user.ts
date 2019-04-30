@@ -1,7 +1,6 @@
-/* Defines the user entity */
 export interface User {
-    id: number;
-    userName: string;
-    password: string;
-    isAdmin: boolean;
+    readonly id: number;
+    readonly userName: string;
+    readonly password: string;
+    readonly isAdmin: boolean;
 }

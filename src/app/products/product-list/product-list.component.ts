@@ -5,33 +5,37 @@ import {Subscription} from 'rxjs';
 import {Product} from '../product';
 import {ProductService} from '../product.service';
 import {select, Store} from '@ngrx/store';
-import {ProductState} from '../state/product.reducer';
+
+import * as fromProduct from '../state/product.reducer';
+
 import {ToggleProductCodeAction} from '../state/product.action';
+import {ProductState} from '../state/product.reducer';
 
 @Component({
     selector: 'pm-product-list',
     templateUrl: './product-list.component.html',
-    styleUrls: ['./product-list.component.css']
+    styleUrls: ['./product-list.component.scss']
 })
 export class ProductListComponent implements OnInit, OnDestroy {
-    pageTitle = 'Products';
-    errorMessage!: string;
+    readonly pageTitle: string;
+    errorMessage: string | undefined;
 
-    displayCode!: boolean;
+    displayCode: boolean | undefined;
 
     products: Product[];
 
-    // Used to highlight the selected product in the list
+
     selectedProduct: Product | undefined;
-    sub!: Subscription;
+    selectedProductChangesSubscription: Subscription | undefined;
 
     constructor(private readonly _productService: ProductService,
-                private readonly _store: Store<ProductState>) {
+                private readonly _store: Store<fromProduct.State>) {
         this.products = [];
+        this.pageTitle = 'Products';
     }
 
     ngOnInit(): void {
-        this.sub = this._productService.selectedProductChanges$.subscribe(
+        this.selectedProductChangesSubscription = this._productService.selectedProductChanges$.subscribe(
             (selectedProduct: Product | undefined) => this.selectedProduct = selectedProduct
         );
 
@@ -40,18 +44,16 @@ export class ProductListComponent implements OnInit, OnDestroy {
             (err: any) => this.errorMessage = err.error
         );
 
-        // TODO: Unsubscribe
-        this._store.pipe(select("products")).subscribe(
-            (productsState: ProductState) => {
-                if (productsState) {
-                    this.displayCode = productsState.showProductCode
-                }
-            }
-        );
+        //TODO
+        // - Refactor
+        // - Unsubscribe
+        this._store.pipe(select('products')).subscribe((products: ProductState) => {
+            this.displayCode = products.showProductCode;
+        });
     }
 
     ngOnDestroy(): void {
-        this.sub.unsubscribe();
+        this.selectedProductChangesSubscription!.unsubscribe();
     }
 
     checkChanged(value: boolean): void {
