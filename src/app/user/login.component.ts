@@ -6,6 +6,7 @@ import {AuthService} from './auth.service';
 import {select, Store} from '@ngrx/store';
 import {UserState} from './state/user.reducer';
 import {MaskUserNameAction} from './state/user.action';
+import {getMaskUserName} from './state/user.selector';
 
 @Component({
     templateUrl: './login.component.html',
@@ -25,14 +26,8 @@ export class LoginComponent implements OnInit {
     }
 
     ngOnInit(): void {
-
-        //TODO
-        // - Refactor
-        // - Unsubscribe
-        this._store.pipe(select("users")).subscribe(
-            (userState: UserState) => {
-                this.maskUserName = userState.maskUserName;
-            }
+        this._store.pipe(select(getMaskUserName)).subscribe(
+            maskUserName => this.maskUserName = maskUserName
         );
     }
 

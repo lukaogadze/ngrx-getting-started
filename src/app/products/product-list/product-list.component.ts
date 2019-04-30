@@ -6,10 +6,10 @@ import {Product} from '../product';
 import {ProductService} from '../product.service';
 import {select, Store} from '@ngrx/store';
 
-import * as fromProduct from '../state/product.reducer';
+import * as fromProductReducer from '../state/product.reducer';
 
 import {ToggleProductCodeAction} from '../state/product.action';
-import {ProductState} from '../state/product.reducer';
+import {getShowProductCode} from '../state/product.selector';
 
 @Component({
     selector: 'pm-product-list',
@@ -18,18 +18,14 @@ import {ProductState} from '../state/product.reducer';
 })
 export class ProductListComponent implements OnInit, OnDestroy {
     readonly pageTitle: string;
-    errorMessage: string | undefined;
-
-    displayCode: boolean | undefined;
-
     products: Product[];
-
-
+    errorMessage: string | undefined;
+    displayCode: boolean | undefined;
     selectedProduct: Product | undefined;
     selectedProductChangesSubscription: Subscription | undefined;
 
     constructor(private readonly _productService: ProductService,
-                private readonly _store: Store<fromProduct.State>) {
+                private readonly _store: Store<fromProductReducer.State>) {
         this.products = [];
         this.pageTitle = 'Products';
     }
@@ -44,11 +40,9 @@ export class ProductListComponent implements OnInit, OnDestroy {
             (err: any) => this.errorMessage = err.error
         );
 
-        //TODO
-        // - Refactor
-        // - Unsubscribe
-        this._store.pipe(select('products')).subscribe((products: ProductState) => {
-            this.displayCode = products.showProductCode;
+
+        this._store.pipe(select(getShowProductCode)).subscribe(showProductCode => {
+            this.displayCode = showProductCode;
         });
     }
 

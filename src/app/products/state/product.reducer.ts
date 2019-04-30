@@ -1,6 +1,6 @@
 import {ProductActions, ProductActionTypes} from './product.action';
 import {Product} from '../product';
-import * as fromRoot from  "../../state/app.state";
+import * as fromRoot from '../../state/app.state';
 
 
 export interface ProductState {
@@ -13,15 +13,18 @@ export interface State extends fromRoot.State {
     readonly products: ProductState
 }
 
-
-
 const initialState: ProductState = {
     showProductCode: false,
     currentProduct: undefined,
     products: [],
 };
 
-export function reducer(state = initialState, action: ProductActions): ProductState {
+
+
+
+
+
+export function reducer(state: ProductState = initialState, action: ProductActions): ProductState {
     switch (action.type) {
         case ProductActionTypes.ToggleProductCode:
             return {
@@ -32,5 +35,38 @@ export function reducer(state = initialState, action: ProductActions): ProductSt
             return state;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

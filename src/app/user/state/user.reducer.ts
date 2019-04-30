@@ -8,7 +8,7 @@ const initialState: UserState = {
     maskUserName: false
 };
 
-export function reducer(state = initialState, action: UserActions): UserState {
+export function reducer(state: UserState = initialState, action: UserActions): UserState {
     switch (action.type) {
         case UserActionTypes.MaskUserName:
             return {
