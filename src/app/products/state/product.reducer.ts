@@ -5,7 +5,7 @@ import * as fromRoot from '../../state/app.state';
 
 export interface ProductState {
     readonly showProductCode: boolean;
-    readonly currentProduct: Product | undefined;
+    readonly currentProductId: number | undefined;
     readonly products: ReadonlyArray<Product>;
     readonly error: string | undefined;
 }
@@ -16,11 +16,12 @@ export interface State extends fromRoot.State {
 
 const initialState: ProductState = {
     showProductCode: false,
-    currentProduct: undefined,
+    currentProductId: undefined,
     products: [],
     error: undefined
 };
 
+implement create/delete
 
 export function reducer(state: ProductState = initialState, action: ProductActions): ProductState {
     switch (action.type) {
@@ -33,25 +34,19 @@ export function reducer(state: ProductState = initialState, action: ProductActio
         case ProductActionTypes.SetCurrentProduct:
             return {
                 ...state,
-                currentProduct: {...action.payload}
+                currentProductId: action.payload.id
             };
 
         case ProductActionTypes.ClearCurrentProduct:
             return {
                 ...state,
-                currentProduct: undefined
+                currentProductId: undefined
             };
 
         case ProductActionTypes.InitializeCurrentProduct:
             return {
                 ...state,
-                currentProduct: {
-                    id: 0,
-                    productName: "",
-                    productCode: "New",
-                    description: "",
-                    starRating: 0
-                }
+                currentProductId: 0
             };
 
         case ProductActionTypes.LoadSuccess:
@@ -65,6 +60,23 @@ export function reducer(state: ProductState = initialState, action: ProductActio
             return {
                 ...state,
                 products: [],
+                error: action.payload
+            };
+
+        case ProductActionTypes.UpdateProductSuccess:
+            const updatedProducts = state.products.map(
+                item => action.payload.id === item.id ? action.payload : item
+            );
+            return {
+                ...state,
+                products: updatedProducts,
+                currentProductId: action.payload.id,
+                error: undefined
+            };
+
+        case ProductActionTypes.UpdateProductFail:
+            return {
+                ...state,
                 error: action.payload
             };
 

@@ -9,7 +9,7 @@ import {select, Store} from '@ngrx/store';
 
 import * as fromProductReducer from "../state/product.reducer";
 import {getCurrentProductSelector} from '../state/product.selector';
-import {ClearCurrentProductAction, SetCurrentProductAction} from '../state/product.action';
+import {ClearCurrentProductAction, SetCurrentProductAction, UpdateProductAction} from '../state/product.action';
 
 @Component({
     selector: 'pm-product-edit',
@@ -138,10 +138,7 @@ export class ProductEditComponent implements OnInit {
                         (err: any) => this.errorMessage = err.error
                     );
                 } else {
-                    this.productService.updateProduct(p).subscribe(
-                        product => this._store.dispatch(new SetCurrentProductAction(product)),
-                        (err: any) => this.errorMessage = err.error
-                    );
+                    this._store.dispatch(new UpdateProductAction(p));
                 }
             }
         } else {
