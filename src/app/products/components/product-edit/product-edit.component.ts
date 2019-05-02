@@ -1,26 +1,25 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 
-import {Product} from '../product';
-import {GenericValidator} from '../../shared/generic-validator';
-import {NumberValidators} from '../../shared/number.validator';
-import {select, Store} from '@ngrx/store';
-
-import * as fromProductReducer from '../state/product.reducer';
-import {getCurrentProductSelector, getErrorSelector} from '../state/product.selector';
-import {ClearCurrentProductAction, CreateProductAction, DeleteProductAction, UpdateProductAction} from '../state/product.action';
-import {Observable, of} from 'rxjs';
+import {Product} from '../../product';
+import {GenericValidator} from '../../../shared/generic-validator';
+import {NumberValidators} from '../../../shared/number.validator';
 
 @Component({
     selector: 'pm-product-edit',
     templateUrl: './product-edit.component.html',
     styleUrls: ['./product-edit.component.scss']
 })
-export class ProductEditComponent implements OnInit {
+export class ProductEditComponent implements OnInit, OnChanges {
     pageTitle: string;
-    errorMessage$: Observable<string | undefined> | undefined;
-    productForm: FormGroup | undefined;
+    @Input() errorMessage: string | undefined;
+    @Input() selectedProduct: Product | undefined;
+    @Output() create = new EventEmitter<Product>();
+    @Output() update = new EventEmitter<Product>();
+    @Output() delete = new EventEmitter<Product>();
+    @Output() clearCurrent = new EventEmitter<void>();
 
+    productForm: FormGroup | undefined;
     product: Product | undefined;
 
 
@@ -28,8 +27,7 @@ export class ProductEditComponent implements OnInit {
     private readonly _validationMessages: { [key: string]: { [key: string]: string } };
     private readonly _genericValidator: GenericValidator;
 
-    constructor(private readonly fb: FormBuilder,
-                private readonly _store: Store<fromProductReducer.State>) {
+    constructor(private readonly fb: FormBuilder) {
         this.pageTitle = 'Product Edit';
 
         this._validationMessages = {
@@ -60,17 +58,17 @@ export class ProductEditComponent implements OnInit {
             description: ''
         });
 
-        // TODO Refactor
-        this._store.pipe(select(getCurrentProductSelector)).subscribe(
-            currentProduct => this.displayProduct(currentProduct)
-        );
-
-
         this.productForm.valueChanges.subscribe(
             () => this.displayMessage = this._genericValidator.processMessages(this.productForm!)
         );
+    }
 
-        this.errorMessage$ = this._store.pipe(select(getErrorSelector));
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes.selectedProduct) {
+            const product: any = changes.selectedProduct.currentValue as Product;
+            this.displayProduct(product);
+        }
     }
 
 
@@ -84,9 +82,9 @@ export class ProductEditComponent implements OnInit {
         // Set the local product property
         this.product = product;
 
-        if (this.product) {
+        if (this.product && this.productForm) {
             // Reset the form back to pristine
-            this.productForm!.reset();
+            this.productForm.reset();
 
             // Display the appropriate page title
             if (this.product.id === 0) {
@@ -96,7 +94,7 @@ export class ProductEditComponent implements OnInit {
             }
 
             // Update the data on the form
-            this.productForm!.patchValue({
+            this.productForm.patchValue({
                 productName: this.product.productName,
                 productCode: this.product.productCode,
                 starRating: this.product.starRating,
@@ -106,18 +104,16 @@ export class ProductEditComponent implements OnInit {
     }
 
     cancelEdit(): void {
-        // Redisplay the currently selected product
-        // replacing any edits made
         this.displayProduct(this.product);
     }
 
     deleteProduct(): void {
         if (this.product && this.product.id) {
             if (confirm(`Really delete the product: ${this.product.productName}?`)) {
-                this._store.dispatch(new DeleteProductAction(this.product.id));
+                this.delete.emit(this.product);
             }
         } else {
-            this._store.dispatch(new ClearCurrentProductAction());
+            this.clearCurrent.emit();
         }
     }
 
@@ -127,14 +123,13 @@ export class ProductEditComponent implements OnInit {
                 const p = {...this.product, ...this.productForm!.value};
 
                 if (p.id === 0) {
-                    this._store.dispatch(new CreateProductAction(p));
+                    this.create.emit(p);
                 } else {
-                    this._store.dispatch(new UpdateProductAction(p));
+                    this.update.emit(p);
                 }
             }
         } else {
-            this.errorMessage$ = of('Please correct the validation errors.');
+            this.errorMessage = 'Please correct the validation errors.';
         }
     }
-
 }
