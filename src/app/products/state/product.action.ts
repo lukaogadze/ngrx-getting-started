@@ -50,7 +50,37 @@ export const enum ProductActionTypes {
     /**
      * [Product] Update Product Fail
      */
-    UpdateProductFail = "[Product] Update Product Fail"
+    UpdateProductFail = "[Product] Update Product Fail",
+
+    /**
+     * [Product] Create Product
+     */
+    CreateProduct = '[Product] Create Product',
+
+    /**
+     * [Product] Create Product Success
+     */
+    CreateProductSuccess = '[Product] Create Product Success',
+
+    /**
+     * [Product] Create Product Fail
+     */
+    CreateProductFail = '[Product] Create Product Fail',
+
+    /**
+     * [Product] Delete Product
+     */
+    DeleteProduct = '[Product] Delete Product',
+
+    /**
+     * [Product] Delete Product Success
+     */
+    DeleteProductSuccess = '[Product] Delete Product Success',
+
+    /**
+     * [Product] Delete Product Fail
+     */
+    DeleteProductFail = '[Product] Delete Product Fail'
 }
 
 
@@ -101,6 +131,36 @@ export class UpdateProductFailAction implements Action {
     constructor(public readonly payload: string) {}
 }
 
+export class CreateProductAction implements Action {
+    readonly type = ProductActionTypes.CreateProduct;
+    constructor(public readonly payload: Product) { }
+}
+
+export class CreateProductSuccessAction implements Action {
+    readonly type = ProductActionTypes.CreateProductSuccess;
+    constructor(public readonly payload: Product) { }
+}
+
+export class CreateProductFailAction implements Action {
+    readonly type = ProductActionTypes.CreateProductFail;
+    constructor(public readonly payload: string) { }
+}
+
+export class DeleteProductAction implements Action {
+    readonly type = ProductActionTypes.DeleteProduct;
+    constructor(public readonly payload: number) { }
+}
+
+export class DeleteProductSuccessAction implements Action {
+    readonly type = ProductActionTypes.DeleteProductSuccess;
+    constructor(public readonly payload: number) { }
+}
+
+export class DeleteProductFailAction implements Action {
+    readonly type = ProductActionTypes.DeleteProductFail;
+    constructor(public readonly payload: string) { }
+}
+
 
 export type ProductActions = ToggleProductCodeAction
     | SetCurrentProductAction
@@ -111,4 +171,10 @@ export type ProductActions = ToggleProductCodeAction
     | LoadFailAction
     | UpdateProductAction
     | UpdateProductSuccessAction
-    | UpdateProductFailAction;
+    | UpdateProductFailAction
+    | CreateProductAction
+    | CreateProductSuccessAction
+    | CreateProductFailAction
+    | DeleteProductAction
+    | DeleteProductSuccessAction
+    | DeleteProductFailAction;

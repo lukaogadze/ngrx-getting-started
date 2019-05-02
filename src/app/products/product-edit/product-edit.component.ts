@@ -2,14 +2,14 @@ import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 
 import {Product} from '../product';
-import {ProductService} from '../product.service';
 import {GenericValidator} from '../../shared/generic-validator';
 import {NumberValidators} from '../../shared/number.validator';
 import {select, Store} from '@ngrx/store';
 
-import * as fromProductReducer from "../state/product.reducer";
-import {getCurrentProductSelector} from '../state/product.selector';
-import {ClearCurrentProductAction, SetCurrentProductAction, UpdateProductAction} from '../state/product.action';
+import * as fromProductReducer from '../state/product.reducer';
+import {getCurrentProductSelector, getErrorSelector} from '../state/product.selector';
+import {ClearCurrentProductAction, CreateProductAction, DeleteProductAction, UpdateProductAction} from '../state/product.action';
+import {Observable, of} from 'rxjs';
 
 @Component({
     selector: 'pm-product-edit',
@@ -18,21 +18,19 @@ import {ClearCurrentProductAction, SetCurrentProductAction, UpdateProductAction}
 })
 export class ProductEditComponent implements OnInit {
     pageTitle: string;
-    errorMessage: string;
+    errorMessage$: Observable<string | undefined> | undefined;
     productForm: FormGroup | undefined;
 
     product: Product | undefined;
 
-    // Use with the generic validation message class
+
     displayMessage: { [key: string]: string } = {};
     private readonly _validationMessages: { [key: string]: { [key: string]: string } };
     private readonly _genericValidator: GenericValidator;
 
     constructor(private readonly fb: FormBuilder,
-                private readonly productService: ProductService,
                 private readonly _store: Store<fromProductReducer.State>) {
         this.pageTitle = 'Product Edit';
-        this.errorMessage = "";
 
         this._validationMessages = {
             productName: {
@@ -71,6 +69,8 @@ export class ProductEditComponent implements OnInit {
         this.productForm.valueChanges.subscribe(
             () => this.displayMessage = this._genericValidator.processMessages(this.productForm!)
         );
+
+        this.errorMessage$ = this._store.pipe(select(getErrorSelector));
     }
 
 
@@ -114,35 +114,26 @@ export class ProductEditComponent implements OnInit {
     deleteProduct(): void {
         if (this.product && this.product.id) {
             if (confirm(`Really delete the product: ${this.product.productName}?`)) {
-                this.productService.deleteProduct(this.product.id).subscribe(
-                    () => this._store.dispatch(new ClearCurrentProductAction()),
-                    (err: any) => this.errorMessage = err.error
-                );
+                this._store.dispatch(new DeleteProductAction(this.product.id));
             }
         } else {
-            this._store.dispatch(new ClearCurrentProductAction())
+            this._store.dispatch(new ClearCurrentProductAction());
         }
     }
 
     saveProduct(): void {
         if (this.productForm!.valid) {
             if (this.productForm!.dirty) {
-                // Copy over all of the original product properties
-                // Then copy over the values from the form
-                // This ensures values not on the form, such as the Id, are retained
                 const p = {...this.product, ...this.productForm!.value};
 
                 if (p.id === 0) {
-                    this.productService.createProduct(p).subscribe(
-                        product => this._store.dispatch(new SetCurrentProductAction(product)),
-                        (err: any) => this.errorMessage = err.error
-                    );
+                    this._store.dispatch(new CreateProductAction(p));
                 } else {
                     this._store.dispatch(new UpdateProductAction(p));
                 }
             }
         } else {
-            this.errorMessage = 'Please correct the validation errors.';
+            this.errorMessage$ = of('Please correct the validation errors.');
         }
     }
 

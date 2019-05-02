@@ -21,7 +21,6 @@ const initialState: ProductState = {
     error: undefined
 };
 
-implement create/delete
 
 export function reducer(state: ProductState = initialState, action: ProductActions): ProductState {
     switch (action.type) {
@@ -75,6 +74,34 @@ export function reducer(state: ProductState = initialState, action: ProductActio
             };
 
         case ProductActionTypes.UpdateProductFail:
+            return {
+                ...state,
+                error: action.payload
+            };
+
+        case ProductActionTypes.CreateProductSuccess:
+            return {
+                ...state,
+                products: [...state.products, action.payload],
+                currentProductId: action.payload.id,
+                error: undefined
+            };
+
+        case ProductActionTypes.CreateProductFail:
+            return {
+                ...state,
+                error: action.payload
+            };
+
+        case ProductActionTypes.DeleteProductSuccess:
+            return {
+                ...state,
+                products: state.products.filter(x => x.id !== action.payload),
+                currentProductId: undefined,
+                error: undefined
+            };
+
+        case ProductActionTypes.DeleteProductFail:
             return {
                 ...state,
                 error: action.payload
